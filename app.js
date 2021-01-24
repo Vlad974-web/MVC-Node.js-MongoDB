@@ -19,6 +19,7 @@ const contactPageController = require('./controllers/contactPage')
 const userCreate = require('./controllers/userCreate')
 const userRegister = require('./controllers/userRegister')
 const userLogin = require('./controllers/userLogin')
+const userLoginAuth = require('./controllers/userLoginAuth')
 
 const app = express()
 
@@ -69,6 +70,9 @@ app.post('/user/register', userRegister)
 
 // Route login ------------------
 app.get('/user/login', userLogin)
+
+// Route userLoginAuth ------------------
+app.post('/user/loginAuth', userLoginAuth)
 
 
 
