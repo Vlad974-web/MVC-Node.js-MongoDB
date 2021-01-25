@@ -7,6 +7,8 @@ const MomentHandler = require("handlebars.moment")
 MomentHandler.registerHelpers(Handlebars)
 const bodyParser = require('body-parser')
 const fileupload = require('express-fileupload')
+const expressSession = require('express-session')
+const MongoStore = require('connect-mongo')             // Elle va se connecter dans la basse de donnée
 
 // Controller pour les articles --------------------------------------
 const articleAddController = require('./controllers/articleAdd')
@@ -23,25 +25,46 @@ const userLoginAuth = require('./controllers/userLoginAuth')
 
 const app = express()
 
-// Body-parser
+// MongoDB (mongoose) -------------------------------------------------------------------------------
+mongoose.connect('mongodb://localhost:27017/blog', {useNewUrlParser: true, useUnifiedTopology: true})
+
+// connect-mongo
+const mongoStore = MongoStore(expressSession)
+
+// express-session ------
+app.use(expressSession({
+    secret: 'Securité',
+    name: 'biscuit',
+    saveUninitialized: true,            // ça veut dire sauvegarde ce qui n'est pas initialiser, en gros l'utilasateur accepte les cookies oui ou non.
+    resave: false,                      // Si il est acctivé est bien ça va quand même enregistrer les informations les cookies, même ne sont pas modifier
+
+    store: new mongoStore(
+        {mongooseConnection: mongoose.connection}
+    )
+}))
+
+// Body-parser ---------------------------------
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 
 // express-fileupload
 app.use(fileupload())
 
+const auth = require('./middleware/auth')
+
 app.use(express.static('public'));
 
-// Handlebars
+// Handlebars -----------------------------------------------------------------------------------------------------------
 app.engine('hbs', exphbs({defaultLayout: 'main', extname: 'hbs', handlebars: allowInsecurePrototypeAccess(Handlebars)}))
 app.set('view engine', 'hbs');
 
-// Middleware
+// Middleware ---------------------------------------------------
 const articleValidPost = require('./middleware/articleValidPost')
 app.use('/articles/post', articleValidPost)
+app.use('/articles/add', auth)
 
-// MongoDB (mongoose)
-mongoose.connect('mongodb://localhost:27017/blog', {useNewUrlParser: true, useUnifiedTopology: true})
+
+
 
 // Toutes les routes hbs 
 // Route contact.hbs----------------------
@@ -51,13 +74,13 @@ app.get('/contact', contactPageController)
 app.get('/', homePage)
 
 // Route add.hbs Articles--------------------
-app.get('/articles/add', articleAddController)
+app.get('/articles/add', auth, articleAddController)
 
 // Route articles.hbs---------------------------
 app.get('/articles/:id', articleSingleController)
 
 // Route POST------------------------------------
-app.post('/articles/post', articlePostController)
+app.post('/articles/post', auth, articleValidPost, articlePostController)
 
 
 
