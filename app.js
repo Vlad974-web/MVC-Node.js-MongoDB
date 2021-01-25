@@ -9,6 +9,7 @@ const bodyParser = require('body-parser')
 const fileupload = require('express-fileupload')
 const expressSession = require('express-session')
 const MongoStore = require('connect-mongo')             // Elle va se connecter dans la basse de donnée
+const connectFlash = require('connect-flash')           // Pour aficher les eurrors sur demande.
 
 // Controller pour les articles --------------------------------------
 const articleAddController = require('./controllers/articleAdd')
@@ -22,11 +23,15 @@ const userCreate = require('./controllers/userCreate')
 const userRegister = require('./controllers/userRegister')
 const userLogin = require('./controllers/userLogin')
 const userLoginAuth = require('./controllers/userLoginAuth')
+const userLogout = require('./controllers/userLogout')
 
 const app = express()
 
 // MongoDB (mongoose) -------------------------------------------------------------------------------
 mongoose.connect('mongodb://localhost:27017/blog', {useNewUrlParser: true, useUnifiedTopology: true})
+
+// Connect-flash ------
+app.use(connectFlash())
 
 // connect-mongo
 const mongoStore = MongoStore(expressSession)
@@ -51,12 +56,20 @@ app.use(bodyParser.urlencoded({extended: true}))
 app.use(fileupload())
 
 const auth = require('./middleware/auth')
+const redirectAuthSucess = require('./middleware/redirectAuthSucess')
 
 app.use(express.static('public'));
 
 // Handlebars -----------------------------------------------------------------------------------------------------------
 app.engine('hbs', exphbs({defaultLayout: 'main', extname: 'hbs', handlebars: allowInsecurePrototypeAccess(Handlebars)}))
 app.set('view engine', 'hbs');
+
+// Pour déconnecté
+app.use('*', (req, res, next) => {
+    res.locals.user = req.session.userId
+
+    next()
+})
 
 // Middleware ---------------------------------------------------
 const articleValidPost = require('./middleware/articleValidPost')
@@ -87,15 +100,27 @@ app.post('/articles/post', auth, articleValidPost, articlePostController)
 
 
 // Toutes les routes users
-// Route userCreate ---------------------
-app.get('/user/create', userCreate)
+// Route userCreate -----------------------------------
+app.get('/user/create', redirectAuthSucess, userCreate)
 app.post('/user/register', userRegister)
 
-// Route login ------------------
-app.get('/user/login', userLogin)
+// Route login --------------------------------------
+app.get('/user/login', redirectAuthSucess, userLogin)
 
-// Route userLoginAuth ------------------
-app.post('/user/loginAuth', userLoginAuth)
+// Route userLoginAuth ---------------------------------------
+app.post('/user/loginAuth', redirectAuthSucess, userLoginAuth)
+
+// Route userLogout ---------------
+app.get('/user/logout', userLogout)
+
+
+
+
+
+// Route error404.hbs
+app.use( (req, res) => {
+    res.render('error404')
+})
 
 
 

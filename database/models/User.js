@@ -4,16 +4,16 @@ const mongoose = require('mongoose')
 const UserShema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: [true, 'Le nom est oblgatoire']
     },
     email: {
         type: String,
-        required: true,
+        required: [true, 'Le mail est oblgatoire'],
         unique: true
     },
     password: {
         type: String,
-        required: true
+        required: [true, 'Le mot de passe est oblgatoire']
     },
 })
 

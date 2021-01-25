@@ -1,6 +1,7 @@
 <section class="section">
     <div class="container is-fullhd">
-        <form action="/articles/post" method="POST" enctype="multipart/form-data">      {{!-- enctype ça nous permet d'afficher l'image en format jpg. --}}
+        <form action="/articles/post" method="POST" enctype="multipart/form-data"> {{!-- enctype ça nous permet
+            d'afficher l'image en format jpg. --}}
 
             <div class="field">
                 <label class="label">Titre de l'article</label>
@@ -13,6 +14,9 @@
                 <label class="label">Contenu</label>
                 <div class="control">
                     <textarea class="textarea" name="content"></textarea>
+                    <script>
+                        CKEDITOR.replace('content');
+                    </script>
                 </div>
             </div>
 

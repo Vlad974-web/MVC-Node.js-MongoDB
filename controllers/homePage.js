@@ -6,7 +6,5 @@ module.exports = async (req, res) => {       // Quand URL lancé et bien la requ
 
     const meliodas = await Post.find({}).lean()     // await Post.find({}) ça permet d'attendre le retour de la requête, donc il permet d'afficher le contenu qui dans collections
 
-    console.log(req.session);
-
     res.render('index', {meliodas})
 }
