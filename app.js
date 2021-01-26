@@ -10,6 +10,7 @@ const fileupload = require('express-fileupload')
 const expressSession = require('express-session')
 const MongoStore = require('connect-mongo')             // Elle va se connecter dans la basse de donnée
 const connectFlash = require('connect-flash')           // Pour aficher les eurrors sur demande.
+const {stripTags} = require('./helpers/hbs')
 
 // Controller pour les articles --------------------------------------
 const articleAddController = require('./controllers/articleAdd')
@@ -61,7 +62,7 @@ const redirectAuthSucess = require('./middleware/redirectAuthSucess')
 app.use(express.static('public'));
 
 // Handlebars -----------------------------------------------------------------------------------------------------------
-app.engine('hbs', exphbs({defaultLayout: 'main', extname: 'hbs', handlebars: allowInsecurePrototypeAccess(Handlebars)}))
+app.engine('hbs', exphbs({defaultLayout: 'main', helpers: {stripTags: stripTags}, extname: 'hbs', handlebars: allowInsecurePrototypeAccess(Handlebars)}))
 app.set('view engine', 'hbs');
 
 // Pour déconnecté
